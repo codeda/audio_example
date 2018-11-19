@@ -43,7 +43,7 @@ pid_t popen2(const char *command, int *infp, int *outfp, int *errfp)
 	  ctr++;
      } while (params[ctr-1] != NULL); 
      	
-        execv("/usr/bin/ffmpeg", params);
+        execv("/usr/local/bin/ffmpeg", params);
         exit(1);
 
     }
