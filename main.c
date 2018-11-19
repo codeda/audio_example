@@ -61,7 +61,35 @@ int main(int argc, char** argv) {
 		o->pid = popen2(o->cmd, NULL, &o->fd, NULL);
 	}
 
-	
+	int ms=0;
+	int chunk_size = audio_freq/1000*2*2;
+	uint8_t *audio_data = (uint8_t*)malloc(chunk_size);
+	uint8_t *overlay_data = (uint8_t*)malloc(chunk_size);
 
+	while(true) {
+		for (int i=0;i<overlay_no;i++) {
+			if (overlays[i].ms == ms) {
+				if (current_overlay!=NULL) {
+					pclose2(current_overlay->pid);
+				}
+				current_overlay = overlays+i;
+			}
+		}		
+		int sread = read(video_fd_in, audio_data, chunk_size);
+		if (sread != chunk_size) 
+			return 0;
+		if (current_overlay != NULL) {
+			sread = read(current_overlay->fd, overlay_data, chunk_size);
+			if (sread != chunk_size) {
+				pclose2(current_overlay->pid);
+				current_overlay = NULL;
+			}
+		}
+		if (current_overlay!=NULL) {
+			write(audio_fd_out, overlay_data, chunk_size);
+		} else {
+			write(audio_fd_out, audio_data, chunk_size);
+		}
+	}
 	return 0;
 }
